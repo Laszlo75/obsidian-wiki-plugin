@@ -1,0 +1,8 @@
+{
+  "name": "obsidian-wiki",
+  "description": "Build and maintain a compounding personal knowledge base in Obsidian. Implements the LLM Wiki pattern: Claude reads sources, writes structured wiki pages, maintains cross-references, and keeps a Wiki Index — so knowledge compounds instead of scattering. Includes skills for capturing brainstorms from conversations and ingesting external sources (articles, papers, web clippings) into interlinked vault pages.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Laszlo Szabo"
+  }
+}
