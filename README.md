@@ -12,8 +12,11 @@ The key insight: **knowledge compounds when the LLM does the bookkeeping.** Ever
 
 ### From the marketplace (recommended)
 
-```bash
-claude plugin install obsidian-wiki
+In Claude Code, run:
+
+```text
+/plugin marketplace add Laszlo75/obsidian-wiki-plugin
+/plugin install obsidian-wiki@obsidian-wiki-marketplace
 ```
 
 ### Manual install

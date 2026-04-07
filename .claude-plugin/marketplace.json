@@ -1,0 +1,17 @@
+{
+  "name": "obsidian-wiki-marketplace",
+  "owner": {
+    "name": "Laszlo Szabo"
+  },
+  "plugins": [
+    {
+      "name": "obsidian-wiki",
+      "description": "Build and maintain a compounding personal knowledge base in Obsidian. Implements the LLM Wiki pattern: Claude processes sources into structured, interlinked wiki pages with cross-references and a Wiki Index.",
+      "source": {
+        "source": "github",
+        "repo": "Laszlo75/obsidian-wiki-plugin"
+      },
+      "version": "1.0.0"
+    }
+  ]
+}
