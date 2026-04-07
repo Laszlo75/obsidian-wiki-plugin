@@ -4,5 +4,8 @@
   "version": "1.0.0",
   "author": {
     "name": "Laszlo Szabo"
-  }
+  },
+  "homepage": "https://github.com/Laszlo75/obsidian-wiki-plugin",
+  "repository": "https://github.com/Laszlo75/obsidian-wiki-plugin",
+  "license": "MIT"
 }
