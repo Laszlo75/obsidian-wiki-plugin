@@ -1,6 +1,6 @@
 # Obsidian Wiki Plugin
 
-A Claude plugin for building and maintaining a compounding personal knowledge base in Obsidian, based on [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
+A Claude Code plugin for building and maintaining a compounding personal knowledge base in Obsidian, based on [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
 
 ## What it does
 
@@ -10,15 +10,27 @@ The key insight: **knowledge compounds when the LLM does the bookkeeping.** Ever
 
 ## Installation
 
-```bash
-git clone https://github.com/Laszlo75/obsidian-wiki-plugin.git ~/.claude/plugins/obsidian-wiki
+### From the marketplace (recommended)
+
+In Claude Code, run:
+
+```text
+/plugin marketplace add Laszlo75/obsidian-wiki-plugin
+/plugin install obsidian-wiki@obsidian-wiki-marketplace
 ```
 
-After installing:
+### Local development
 
-1. Connect the Obsidian MCP tools (see [Requirements](#requirements) below).
-2. Set up your vault with the expected [folder structure](#vault-setup).
-3. Start using any of the skills by their trigger phrases — Claude will pick them up automatically.
+```bash
+claude --plugin-dir /path/to/obsidian-wiki-plugin
+```
+
+### After installing
+
+1. Run `/reload-plugins` to activate the skills.
+2. Connect the Obsidian MCP tools (see [Requirements](#requirements) below).
+3. Set up your vault with the expected [folder structure](#vault-setup).
+4. Start using any of the skills by their trigger phrases — Claude will pick them up automatically.
 
 ## Skills
 
