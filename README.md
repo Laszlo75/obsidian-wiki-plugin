@@ -10,22 +10,11 @@ The key insight: **knowledge compounds when the LLM does the bookkeeping.** Ever
 
 ## Installation
 
-### From the marketplace (recommended)
-
-In Claude Code, run:
-
-```text
-/plugin marketplace add Laszlo75/obsidian-wiki-plugin
-/plugin install obsidian-wiki@obsidian-wiki-marketplace
-```
-
-### Manual install
-
 ```bash
 git clone https://github.com/Laszlo75/obsidian-wiki-plugin.git ~/.claude/plugins/obsidian-wiki
 ```
 
-### After installing
+After installing:
 
 1. Connect the Obsidian MCP tools (see [Requirements](#requirements) below).
 2. Set up your vault with the expected [folder structure](#vault-setup).
