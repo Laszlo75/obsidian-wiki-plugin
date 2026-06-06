@@ -1,0 +1,31 @@
+name: Sync shared references
+
+on:
+  push:
+    paths:
+      - 'skills/shared/**'   # only runs when shared/ actually changes
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # needed to commit back to the repo
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # full history so the commit lands cleanly
+
+      - name: Run sync script
+        run: bash scripts/sync-shared.sh
+
+      - name: Commit updated references
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add skills/*/references/
+          git diff --cached --quiet && echo "Nothing to commit" && exit 0
+          git commit -m "chore: sync shared references [skip ci]"
+          git push
