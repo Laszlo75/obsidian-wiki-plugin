@@ -248,7 +248,7 @@ Correctly evolved (keep): meta/ folder, "Brainstorm - " prefix ✅
 3. List all folders in `02 Area/` and `03 Resources/`. Repeat.
 4. Flag any project/area/cluster with >5 notes but no hub page.
 
-When offering to create a missing hub page, read `references/ARTIFACTS.md` → Hub Page section.
+When offering to create a missing hub page, read `references/OBSIDIAN-ARTIFACTS.md` → Hub Page section.
 
 ```
 🟡 HUB PAGE AUDIT
@@ -287,7 +287,7 @@ Stale hub pages (N):
 
 Always verify properties exist before designing a Base around them.
 
-When creating artifacts, read `references/ARTIFACTS.md`.
+When creating artifacts, read `references/OBSIDIAN-ARTIFACTS.md`.
 
 ```
 🔵 ARTIFACT OPPORTUNITIES

@@ -23,7 +23,7 @@ The key difference from brainstorm-to-obsidian: brainstorm captures ideas from *
 
 ## Before You Start
 
-**Read the shared vault operations reference** at `shared/VAULT-OPS.md` (relative to the plugin root). It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `shared/OBSIDIAN-MARKDOWN.md`.
+**Read the vault operations reference** at `references/VAULT-OPS.md`. It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `references/OBSIDIAN-MARKDOWN.md`.
 
 ## Workflow
 
