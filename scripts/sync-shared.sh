@@ -26,8 +26,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SHARED="$ROOT/shared"
 SKILLS="$ROOT/skills"
+SHARED="$SKILLS/shared"
 
 [ -d "$SHARED" ] || { echo "error: shared/ not found at $SHARED" >&2; exit 1; }
 [ -d "$SKILLS" ] || { echo "error: skills/ not found at $SKILLS" >&2; exit 1; }
@@ -37,6 +37,7 @@ echo "Syncing shared references from: $SHARED"
 for skill in "$SKILLS"/*/; do
   [ -f "${skill}SKILL.md" ] || continue
   name="$(basename "$skill")"
+  [ "$name" = "shared" ] && continue
   refs="${skill}references"
   mkdir -p "$refs"
 
