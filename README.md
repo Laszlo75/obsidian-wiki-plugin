@@ -32,6 +32,8 @@ claude --plugin-dir /path/to/obsidian-wiki-plugin
 3. Set up your vault with the expected [folder structure](#vault-setup).
 4. Start using any of the skills by their trigger phrases — Claude will pick them up automatically.
 
+The reference files each skill needs are committed under `skills/<skill>/references/`, so a fresh clone works out of the box. If you edit the canonical sources in `skills/shared/`, regenerate them — see [Development](#development).
+
 ## Skills
 
 ### brainstorm-to-obsidian
@@ -59,19 +61,33 @@ Has two complementary modes:
 
 ## Shared references
 
-All skills draw from shared references in `shared/`:
+Common conventions and formats live in `skills/shared/` as the **single source of truth**:
 
-- **VAULT-OPS.md** — Vault conventions, PARA routing, cross-referencing, Wiki Index management, tag selection, daily breadcrumbs, summary reports, OKF compatibility
+- **VAULT-OPS.md** — vault conventions, PARA routing, cross-referencing, Wiki Index management, tag selection, daily breadcrumbs, summary reports, OKF compatibility
 - **OBSIDIAN-MARKDOWN.md** — Obsidian-flavoured markdown syntax: wikilinks, callouts, embedding, formatting, frontmatter properties
-- **OBSIDIAN-ARTIFACTS.md** — Formats for navigation artifacts: hub pages (which double as per-folder indexes), Bases dashboards, Canvas files, Tasks aggregators
+- **OBSIDIAN-ARTIFACTS.md** — formats for Obsidian-native navigation artifacts: hub pages (which double as per-folder indexes), Bases dashboards, Canvas files, Tasks aggregators
 
-When vault conventions change, update the shared files and all skills stay in sync.
+Skills do **not** read from `skills/shared/` at runtime. When a skill is loaded, only its own directory travels with it — sibling folders like `skills/shared/` are not guaranteed to be present (this is the case in Claude Desktop and individual-skill installs). So each skill reads from its own `references/` folder instead, and `skills/shared/` is propagated into those folders by a build step. This keeps a single edit point (`skills/shared/`) while every skill stays self-contained. See [Development](#development).
 
 ## OKF compatibility
 
 Vaults built by these skills are structured as an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) (OKF v0.1) bundle — a directory of markdown notes with YAML frontmatter, a `type` on every note, reserved index/log files, and an `okf_version` marker. That makes the knowledge base portable: consumable by any OKF-aware agent, not just this plugin.
 
-Obsidian conventions stay canonical — notes use `[[wikilinks]]`, and OKF's plain-markdown links are produced only by an export transform, never written into the vault. `vault-lint`'s OKF conformance check keeps the bundle valid. See the *OKF Compatibility* section in `shared/VAULT-OPS.md` for the field mapping and export boundary.
+Obsidian conventions stay canonical — notes use `[[wikilinks]]`, and OKF's plain-markdown links are produced only by an export transform, never written into the vault. `vault-lint`'s OKF conformance check keeps the bundle valid. See the *OKF Compatibility* section in `skills/shared/VAULT-OPS.md` for the field mapping and export boundary.
+
+## Development
+
+`skills/shared/` is the source of truth; the per-skill `references/` folders are generated from it. After editing anything in `skills/shared/`, regenerate and commit:
+
+```bash
+bash scripts/sync-shared.sh
+git add -A
+git commit -m "Sync shared references"
+```
+
+`scripts/sync-shared.sh` copies every file in `skills/shared/` into each `skills/<skill>/references/` folder (creating it if needed) and removes the legacy, misnamed `references/ARTIFACTS.md` left by earlier builds. Skill-owned reference files such as vault-lint's `LINT-CHECKS.md` are left untouched.
+
+The generated `references/` folders **are committed** to the repo so that a plain `git clone` install works immediately — don't add them to `.gitignore`.
 
 ## Requirements
 
@@ -88,4 +104,10 @@ The plugin expects:
 
 ## Adding new skills
 
-To add a new skill (e.g., vault-lint), create a folder under `skills/` with a `SKILL.md` that references `shared/VAULT-OPS.md` for vault operations. The shared layer means zero duplication.
+To add a new skill:
+
+1. Create a folder under `skills/` with a `SKILL.md`.
+2. Reference whatever shared docs it needs by their `references/` path (e.g. `references/VAULT-OPS.md`), not `shared/...`. Skill-specific references (not shared across skills) also live in the skill's `references/` folder.
+3. Run `bash scripts/sync-shared.sh` to populate `references/`, then commit.
+
+Because `skills/shared/` is the single source of truth and the sync script propagates it into every skill, vault conventions live in exactly one place — edit `skills/shared/`, re-sync, done.

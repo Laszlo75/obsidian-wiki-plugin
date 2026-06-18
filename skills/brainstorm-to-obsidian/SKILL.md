@@ -19,7 +19,7 @@ You are capturing output from a brainstorming session in this Claude conversatio
 
 ## Before You Start
 
-**Read the shared vault operations reference** at `shared/VAULT-OPS.md` (relative to the plugin root). It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `shared/OBSIDIAN-MARKDOWN.md`.
+**Read the vault operations reference** at `references/VAULT-OPS.md`. It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `references/OBSIDIAN-MARKDOWN.md`.
 
 **Then read `meta/Wiki Index.md` once — it is your router.** As described in VAULT-OPS.md, this single read gives you the routing landscape (which projects/areas/resource clusters exist), the working tag vocabulary, and the link-target registry. Lean on it for Steps 2, 3, and 5 instead of firing a cascade of live `search_vault` / `get_tag_info` / `project_context` calls. Drop to live tools only for what the index can't answer, and batch any such searches into a single turn.
 

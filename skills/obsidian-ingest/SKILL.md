@@ -23,7 +23,7 @@ The key difference from brainstorm-to-obsidian: brainstorm captures ideas from *
 
 ## Before You Start
 
-**Read the shared vault operations reference** at `shared/VAULT-OPS.md` (relative to the plugin root). It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `shared/OBSIDIAN-MARKDOWN.md`.
+**Read the vault operations reference** at `references/VAULT-OPS.md`. It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `references/OBSIDIAN-MARKDOWN.md`.
 
 **Then read `meta/Wiki Index.md` once — it is your router.** As described in VAULT-OPS.md, this single read gives you the routing landscape, the working tag vocabulary, and the link-target registry. An ingest can touch 10–15 pages, so this matters even more here: use the index to find vault connections, route the summary, verify wikilinks, and pick reuse tags before reaching for live `search_vault` / `get_tag_info` / `project_context`. Drop to live tools only for what the index can't answer (notably a topic that may predate the index), and batch those searches into a single turn. When routing into a large folder whose global entry is a pointer, read that folder's hub-page `## Index` for the detail.
 
