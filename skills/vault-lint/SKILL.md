@@ -45,7 +45,7 @@ Note recent ingest entries in the log — they inform the stale content check.
 **vault-lint is the keeper of the index layer.** The global `meta/Wiki Index.md` is the canonical router every skill reads first (see VAULT-OPS.md). The other skills keep it roughly current on each save; vault-lint is what makes it *trustworthy* — backfilling `type`/`tags` on bare entries (Check 7), sweeping up `status: draft` fast-captures and wiring their backlinks (Check 7), and regenerating per-folder hub-page `## Index` sections from it (Check 10). When you read the Wiki Index here, you read it as both auditor and generator.
 
 **Agree on scope** before running. If not specified, ask:
-> "Full audit (all 11 checks, ~15 min), quick lint (orphans + broken links only), or navigation pass (structure + hub pages + artifacts only)?"
+> "Full audit (all 12 checks, ~15 min), quick lint (orphans + broken links only), or navigation pass (structure + hub pages + artifacts only)?"
 
 Default to full audit.
 
@@ -53,7 +53,7 @@ Default to full audit.
 
 ---
 
-## The 11 Checks
+## The 12 Checks
 
 ### Check 1 — Orphan Pages 🔴
 
@@ -158,6 +158,16 @@ Match vault patterns to the right Obsidian-native tool:
 
 For each identified opportunity, propose the artifact and offer to create it. See `shared/OBSIDIAN-ARTIFACTS.md` for exact formats.
 
+### Check 12 — OKF Conformance 🔵
+
+Verify the vault still reads as a valid OKF bundle (see OKF Compatibility in `shared/VAULT-OPS.md`). Fast — mostly overlaps with the frontmatter reads in Checks 6 and 7.
+
+- **Every Claude-created concept note has parseable YAML frontmatter with a non-empty `type`.** Flag notes missing `type` (the one OKF-required field); offer to backfill it from the note's role (`brainstorm`/`summary`/`entity`/`concept`/`hub`/`report`).
+- **Reserved files well-formed:** `meta/Wiki Index.md` carries `okf_version: "0.1"`; `meta/log.md` is chronological. Add the marker if missing.
+- **`type` value sanity:** flag notes whose `type` is outside the known set (typos, ad-hoc values) — not an error (OKF allows open types), just a consistency nudge.
+- Do **not** flag broken wikilinks here — OKF consumers must tolerate them; that's Check 2's job under our stricter maintenance stance.
+- **Auto-fix eligible:** backfilling `type` (the untagged-frontmatter exception) and adding `okf_version` are safe — offer them.
+
 ---
 
 ## Running the Checks
@@ -165,9 +175,10 @@ For each identified opportunity, propose the artifact and offer to create it. Se
 Priority order:
 
 1. **Always first:** Checks 1, 2, 7 (structural integrity)
-2. **Full audit:** Add checks 3–6, 8–11
+2. **Full audit:** Add checks 3–6, 8–12
 3. **Navigation-only pass:** Checks 9, 10, 11 only
 4. **Large vault (>200 notes):** Sample 30–50% for checks 2, 4, 5. State this in the report.
+5. **OKF conformance (Check 12):** cheap; fold into any full audit, or run standalone when prepping an export.
 
 ---
 
@@ -246,6 +257,8 @@ tags:
 [structural map + recommendations]
 ### Navigation Artifact Opportunities
 [list with status: created / recommended]
+### OKF Conformance
+[notes missing `type`, reserved-file issues, off-vocabulary types — or "conformant"]
 
 ## Artifacts Created This Session
 - [[artifact-name]] — type and purpose

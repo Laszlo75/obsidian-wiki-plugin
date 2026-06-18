@@ -48,7 +48,7 @@ Processes external source material (web clippings, articles, papers, rough notes
 
 ### vault-lint
 
-Health-checks and actively improves an LLM-maintained Obsidian wiki vault. Runs up to 11 checks covering orphan pages, broken wikilinks, stale content, concept gaps, missing cross-references, tag health, index/log integrity, data gaps, structure analysis, hub page coverage, and navigation artifact opportunities. Offers auto-fixes for safe changes and produces a detailed lint report saved to the vault.
+Health-checks and actively improves an LLM-maintained Obsidian wiki vault. Runs up to 12 checks covering orphan pages, broken wikilinks, stale content, concept gaps, missing cross-references, tag health, index/log integrity, data gaps, structure analysis, hub page coverage, navigation artifact opportunities, and OKF conformance. Offers auto-fixes for safe changes and produces a detailed lint report saved to the vault.
 
 Has two complementary modes:
 
@@ -61,10 +61,17 @@ Has two complementary modes:
 
 All skills draw from shared references in `shared/`:
 
-- **VAULT-OPS.md** — Vault conventions, PARA routing, cross-referencing, Wiki Index management, tag selection, daily breadcrumbs, summary reports
+- **VAULT-OPS.md** — Vault conventions, PARA routing, cross-referencing, Wiki Index management, tag selection, daily breadcrumbs, summary reports, OKF compatibility
 - **OBSIDIAN-MARKDOWN.md** — Obsidian-flavoured markdown syntax: wikilinks, callouts, embedding, formatting, frontmatter properties
+- **OBSIDIAN-ARTIFACTS.md** — Formats for navigation artifacts: hub pages (which double as per-folder indexes), Bases dashboards, Canvas files, Tasks aggregators
 
-When vault conventions change, update the shared files and both skills stay in sync.
+When vault conventions change, update the shared files and all skills stay in sync.
+
+## OKF compatibility
+
+Vaults built by these skills are structured as an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) (OKF v0.1) bundle — a directory of markdown notes with YAML frontmatter, a `type` on every note, reserved index/log files, and an `okf_version` marker. That makes the knowledge base portable: consumable by any OKF-aware agent, not just this plugin.
+
+Obsidian conventions stay canonical — notes use `[[wikilinks]]`, and OKF's plain-markdown links are produced only by an export transform, never written into the vault. `vault-lint`'s OKF conformance check keeps the bundle valid. See the *OKF Compatibility* section in `shared/VAULT-OPS.md` for the field mapping and export boundary.
 
 ## Requirements
 

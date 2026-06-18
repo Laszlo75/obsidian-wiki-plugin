@@ -202,7 +202,7 @@ Valid operation types: `brainstorm`, `brainstorm-update`, `ingest`, `lint`, `con
 
 ### If the Wiki Index Does Not Exist
 
-Create it via `obsidian:create_note` at `meta/Wiki Index.md` with sections for Projects, Areas, Resources, Evidence Summaries, and a Log table. See the brainstorm-to-obsidian skill for the full scaffold template.
+Create it via `obsidian:create_note` at `meta/Wiki Index.md` with sections for Projects, Areas, Resources, Evidence Summaries, and a Log table. Give it frontmatter `okf_version: "0.1"` (the bundle-root version marker — see OKF Compatibility). See the brainstorm-to-obsidian skill for the full scaffold template.
 
 ## Daily Note Breadcrumb
 
@@ -244,3 +244,39 @@ Use emoji prefixes for scannability: ✅ 📂 🏷️ 🔗 📋 📅 📦
 - **Code snippets** in fenced code blocks with language identifiers.
 - **Target length:** 400–800 words for most notes. If a note grows beyond ~1500 words across sessions, suggest splitting.
 - Always use `status: active` on new notes.
+
+## OKF Compatibility
+
+The vault is structured as an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) (OKF v0.1) bundle: a directory of markdown notes with YAML frontmatter, reserved index/log files, and a `type` on every concept. This keeps the vault portable — consumable by any OKF-aware agent — without changing how it's authored. **Obsidian conventions stay canonical; OKF is the interop layer.**
+
+### Bundle mapping
+
+| OKF concept | This vault |
+|---|---|
+| Concept document (`type` required) | every Claude-created note (`type:` in frontmatter) |
+| `index.md` (per-directory listing) | global `meta/Wiki Index.md` + per-folder hub-page `## Index` blocks |
+| `log.md` (chronological history) | `meta/log.md` |
+| Bundle-root version marker | `okf_version: "0.1"` in `meta/Wiki Index.md` frontmatter |
+
+### Frontmatter field mapping
+
+OKF's recommended fields map onto our schema — no renaming needed in-vault; an export applies the translation:
+
+| OKF field | Our field | Notes |
+|---|---|---|
+| `type` | `type` | identical; required by both |
+| `title` | *(filename)* | OKF derives from filename when absent — matches our "filename = title" rule |
+| `description` | `description` | identical |
+| `tags` | `tags` | identical |
+| `resource` | `source` | rename on export |
+| `timestamp` | `date` (fall back to `created`) | emit ISO 8601 on export |
+
+### Export boundary (wikilinks → OKF links)
+
+In-vault we always use Obsidian `[[wikilinks]]` (they drive backlinks, the graph, embeds, and block refs). An OKF export — not the in-vault authoring — performs the one-way transform:
+
+- `[[note-name]]` → `[note-name](/relative/path/to/note.md)` (bundle-relative, `.md` extension, spaces `%20`-encoded)
+- `source` → `resource`, `date` → `timestamp`
+- per-folder hub `## Index` blocks → OKF `index.md` files
+
+Never emit raw markdown links into vault notes to "pre-comply" — it degrades the Obsidian experience and OKF consumers must tolerate our wikilinks being converted at export time only.

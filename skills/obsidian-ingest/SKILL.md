@@ -139,12 +139,21 @@ exist or will be created next.
 ## Related Notes
 
 - [[Related Note]] — one-sentence context on the connection
+
+## Citations
+
+Numbered provenance for the claims above — external sources as URLs, internal
+support as wikilinks. This is the OKF `# Citations` convention; keep it last.
+
+[1] [Author et al., Title (Year)](https://example.com)
+[2] [[supporting-vault-note]] — what it corroborates
 ```
 
 **Formatting notes:**
 - Tags: always `claude` + `ingest` + 2–4 topic tags (follow tag selection in VAULT-OPS.md).
 - Length: 400–800 words. Longer sources get more aggressive synthesis.
 - Ugly slug filenames from web clips → clean filename + slug as `alias`.
+- **Citations:** number every external claim source under `## Citations`. Internal references stay as `[[wikilinks]]`; an OKF export rewrites them to `/path.md` links (see OKF Compatibility in VAULT-OPS.md). Omit the section only if the source makes no external factual claims.
 
 ### Step 6: Create or Update Entity/Concept Pages
 
