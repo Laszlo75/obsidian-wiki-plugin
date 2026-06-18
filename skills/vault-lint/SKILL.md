@@ -42,6 +42,8 @@ obsidian:read_note   path: meta/log.md
 
 Note recent ingest entries in the log — they inform the stale content check.
 
+**vault-lint is the keeper of the index layer.** The global `meta/Wiki Index.md` is the canonical router every skill reads first (see VAULT-OPS.md). The other skills keep it roughly current on each save; vault-lint is what makes it *trustworthy* — backfilling `type`/`tags` on bare entries (Check 7), sweeping up `status: draft` fast-captures and wiring their backlinks (Check 7), and regenerating per-folder hub-page `## Index` sections from it (Check 10). When you read the Wiki Index here, you read it as both auditor and generator.
+
 **Agree on scope** before running. If not specified, ask:
 > "Full audit (all 11 checks, ~15 min), quick lint (orphans + broken links only), or navigation pass (structure + hub pages + artifacts only)?"
 
@@ -100,11 +102,15 @@ Note pairs that share ≥3 significant keywords but have no mutual link.
 
 ### Check 7 — Index & Log Health 🔵
 
+The Wiki Index is the router every skill reads first, so its quality is load-bearing — this check keeps it trustworthy.
+
 - Does `meta/Wiki Index.md` exist?
 - Does `meta/log.md` exist?
 - Are there notes in `01 Projects/` or `03 Resources/` not listed in the Wiki Index?
 - Are notes listed in the index that no longer exist?
-- **Auto-fix eligible:** adding missing notes to the Wiki Index is safe — offer to do it automatically.
+- **Entry enrichment:** flag index entries still in the bare `- [[Note]] — description` form (missing the `type`/`#tags` that make the index usable as a router). Read each note's frontmatter and rewrite the entry as `- [[filename]] · \`type\` · #tags — description (date)`.
+- **Draft sweep (fast-captures):** find notes with `status: draft` that were saved via fast-capture (often carrying a `> [!todo] Pending integration` marker). For each, run the deferred integration the fast path skipped — bidirectional cross-referencing per VAULT-OPS.md, then flip `status: draft` → `active`. This is the back half of brainstorm fast-capture; without it, drafts pile up unlinked.
+- **Auto-fix eligible:** adding missing notes to the index, enriching bare entries, and integrating fast-capture drafts are all safe — offer to do them (batch by type, confirm before applying). Backfilling `type`/`tags` onto a note's own frontmatter counts as the allowed "adding tags to clearly untagged notes" exception.
 
 ### Check 8 — Data Gaps & Research Leads 🔵
 
@@ -126,14 +132,16 @@ Survey actual folder contents vs stated conventions. Detect drift, overcrowding,
 - **Respect organic evolution:** if the vault has drifted from PARA but into something coherent, don't force it back. Recommend structure that fits what's actually there.
 - **Auto-fix only:** naming inconsistencies (with explicit approval). Folder restructuring always requires user confirmation — show a full before/after map first.
 
-### Check 10 — Hub Page Audit 🟡
+### Check 10 — Hub Page Audit & Per-Folder Index 🟡
 
-For every project (>5 notes) and major resource cluster — does a navigational hub page exist?
+For every project (>5 notes) and major resource cluster — does a navigational hub page exist, and is its generated `## Index` section current? The hub page doubles as the folder's per-folder index (progressive disclosure); see the Hub Page format in `shared/OBSIDIAN-ARTIFACTS.md`.
 
 - `obsidian:project_list` for all projects. For each, look for files named `Overview`, `Index`, `Hub`, `README`, or `00 - *`.
 - List all folders in `02 Area/` and `03 Resources/` and repeat.
-- Flag: projects/areas/resource clusters with >5 notes but no hub page; hub pages that exist but are stale (notes added since last update).
-- **Auto-fix eligible:** offer to create missing hub pages using the Hub Page template in `shared/OBSIDIAN-ARTIFACTS.md`.
+- Flag: projects/areas/resource clusters with >5 notes but no hub page; hub pages whose curated sections are stale.
+- **Regenerate the `## Index` block:** for each hub page, rebuild the content between the `<!-- BEGIN GENERATED INDEX -->` / `<!-- END GENERATED INDEX -->` markers from the global Wiki Index — one enriched line per note in that folder (`- [[filename]] · \`type\` · #tags — description (date)`). Only touch content between the markers; never disturb the curated zone above.
+- **Progressive disclosure:** when a folder passes ~20–30 notes, collapse its entry in the global Wiki Index to a pointer (`FOLDER — N notes → [[hub page]]`) so the router read stays small. Reverse it if the folder shrinks below the threshold.
+- **Auto-fix eligible:** creating missing hub pages (Hub Page template in `shared/OBSIDIAN-ARTIFACTS.md`), regenerating `## Index` blocks, and collapsing/expanding global pointers are all safe — offer them. The global Wiki Index stays canonical; per-folder `## Index` blocks are always derived from it, never the reverse.
 
 ### Check 11 — Navigation Artifact Opportunities 🔵
 
@@ -192,6 +200,7 @@ Save to `meta/Lint Report YYYY-MM-DD.md` (filename is the title — no `title:` 
 ---
 created: YYYY-MM-DD
 date: YYYY-MM-DD
+type: report
 status: active
 description: "Vault health audit — N issues found across M checks"
 tags:

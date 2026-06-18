@@ -33,6 +33,21 @@ Each index entry carries enough to route, tag, and link without re-querying the 
 
 If the index is missing, stale, or thin, degrade gracefully to the live-search workflow below — and flag it so vault-lint can backfill `type`/`tags` on its next run.
 
+### Per-Folder Indexes (Progressive Disclosure)
+
+Large folders don't bloat the global index. Once a folder grows past ~20–30 notes, its global entry collapses to a **pointer** and the per-note detail lives in that folder's **hub page** (`00 - X Overview.md` / `Overview.md` / `Index.md`), inside a generated `## Index` section:
+
+```markdown
+- PAVE-2 — 34 notes → [[00 - PAVE-2 Overview]]
+```
+
+Rules:
+- **The global Wiki Index is canonical.** Per-folder `## Index` sections are *generated from it by vault-lint* — never hand-maintain them, and never route off a folder index alone.
+- When routing or cross-referencing into a folder whose global entry is a pointer, read that one hub page for the detail — one extra read, still far cheaper than live-searching.
+- Small folders carry no hub page; the global index lists their notes directly.
+
+See OBSIDIAN-ARTIFACTS.md for the hub-page + `## Index` format.
+
 ## Vault Conventions
 
 These are documented in `meta/Vault Conventions and Decisions Log.md`. If in doubt, read that note for the full rationale.
