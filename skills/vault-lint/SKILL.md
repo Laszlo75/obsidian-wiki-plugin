@@ -30,7 +30,7 @@ Both modes save outputs to the vault. Run either or both depending on what the u
 **Read the references** (in this skill's own `references/` folder):
 
 - `references/VAULT-OPS.md` — vault conventions, frontmatter schema, PARA routing, cross-referencing, Wiki Index management, log format, summary report format. All shared operations are defined there; don't duplicate them here.
-- `references/LINT-CHECKS.md` — the detailed procedure, triage rules, and report snippet for each of the 11 checks. Read the relevant section before running a check.
+- `references/LINT-CHECKS.md` — the detailed procedure, triage rules, and report snippet for each of the 12 checks. Read the relevant section before running a check.
 - `references/OBSIDIAN-ARTIFACTS.md` — exact formats for Bases dashboards, Canvas files, Tasks aggregator pages, and hub pages. Read before creating any artifact.
 
 Also read the vault's current state:
@@ -43,8 +43,10 @@ obsidian:read_note   path: meta/log.md
 
 Note recent ingest entries in the log — they inform the stale content check.
 
+**vault-lint is the keeper of the index layer.** The global `meta/Wiki Index.md` is the canonical router every skill reads first (see VAULT-OPS.md). The other skills keep it roughly current on each save; vault-lint is what makes it *trustworthy* — backfilling `type`/`tags` on bare entries (Check 7), sweeping up `status: draft` fast-captures and wiring their backlinks (Check 7), and regenerating per-folder hub-page `## Index` sections from it (Check 10). When you read the Wiki Index here, you read it as both auditor and generator.
+
 **Agree on scope** before running. If not specified, ask:
-> "Full audit (all 11 checks, ~15 min), quick lint (orphans + broken links only), or navigation pass (structure + hub pages + artifacts only)?"
+> "Full audit (all 12 checks, ~15 min), quick lint (orphans + broken links only), or navigation pass (structure + hub pages + artifacts only)?"
 
 Default to full audit.
 
@@ -52,7 +54,7 @@ Default to full audit.
 
 ---
 
-## The 11 Checks
+## The 12 Checks
 
 This table is the index. Each check has a severity (🔴 critical · 🟡 warning · 🔵 informational) and a full procedure, triage rules, and report snippet in `references/LINT-CHECKS.md`. **Read the relevant section there before running a check** — don't rely on this table alone.
 
@@ -64,13 +66,14 @@ This table is the index. Each check has a severity (🔴 critical · 🟡 warnin
 | 4 | Concept gaps | 🟡 | Topics referenced in ≥3 notes with no dedicated page |
 | 5 | Missing cross-references | 🟡 | Related note pairs (≥3 shared keywords) with no mutual link |
 | 6 | Tag health | 🟡 | Singleton tags, near-duplicates, untagged project/resource notes |
-| 7 | Index & log health | 🔵 | Wiki Index / log existence and integrity |
+| 7 | Index & log health | 🔵 | Wiki Index / log integrity; enrich bare entries with `type`/`tags`; sweep `status: draft` fast-captures |
 | 8 | Data gaps & research leads | 🔵 | Stubs, unresolved questions, underexplored topics |
 | 9 | Structure analysis | 🔵 | Folder drift, overcrowding, misrouting, naming inconsistency |
-| 10 | Hub page audit | 🟡 | Projects/clusters (>5 notes) lacking a navigational hub page |
+| 10 | Hub page audit & per-folder index | 🟡 | Projects/clusters (>5 notes) lacking a hub page; regenerate its `## Index` block |
 | 11 | Navigation artifact opportunities | 🔵 | Where a Bases / Canvas / Tasks artifact would improve navigability |
+| 12 | OKF conformance | 🔵 | Every note has a non-empty `type`; reserved files well-formed; `okf_version` present |
 
-**Auto-fix eligible** (always with confirmation): orphan linking (1), near-match link correction (2), "See also" cross-refs (5), adding missing notes to the Wiki Index (7), creating missing hub pages (10). Full triage rules and the exact report snippet for each check live in `references/LINT-CHECKS.md`.
+**Auto-fix eligible** (always with confirmation): orphan linking (1), near-match link correction (2), "See also" cross-refs (5), adding missing notes to and enriching the Wiki Index (7), creating missing hub pages and regenerating their `## Index` blocks (10), backfilling `type` / `okf_version` (12). Full triage rules and the exact report snippet for each check live in `references/LINT-CHECKS.md`.
 
 ---
 
@@ -79,9 +82,10 @@ This table is the index. Each check has a severity (🔴 critical · 🟡 warnin
 Priority order:
 
 1. **Always first:** Checks 1, 2, 7 (structural integrity)
-2. **Full audit:** Add checks 3–6, 8–11
+2. **Full audit:** Add checks 3–6, 8–12
 3. **Navigation-only pass:** Checks 9, 10, 11 only
 4. **Large vault (>200 notes):** Sample 30–50% for checks 2, 4, 5. State this in the report.
+5. **OKF conformance (Check 12):** cheap; fold into any full audit, or run standalone when prepping an export.
 
 ---
 
@@ -114,6 +118,7 @@ Save to `meta/Lint Report YYYY-MM-DD.md` (filename is the title — no `title:` 
 ---
 created: YYYY-MM-DD
 date: YYYY-MM-DD
+type: report
 status: active
 description: "Vault health audit — N issues found across M checks"
 tags:
@@ -159,6 +164,8 @@ tags:
 [structural map + recommendations]
 ### Navigation Artifact Opportunities
 [list with status: created / recommended]
+### OKF Conformance
+[notes missing `type`, reserved-file issues, off-vocabulary types — or "conformant"]
 
 ## Artifacts Created This Session
 - [[artifact-name]] — type and purpose

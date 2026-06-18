@@ -25,6 +25,8 @@ The key difference from brainstorm-to-obsidian: brainstorm captures ideas from *
 
 **Read the vault operations reference** at `references/VAULT-OPS.md`. It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `references/OBSIDIAN-MARKDOWN.md`.
 
+**Then read `meta/Wiki Index.md` once — it is your router.** As described in VAULT-OPS.md, this single read gives you the routing landscape, the working tag vocabulary, and the link-target registry. An ingest can touch 10–15 pages, so this matters even more here: use the index to find vault connections, route the summary, verify wikilinks, and pick reuse tags before reaching for live `search_vault` / `get_tag_info` / `project_context`. Drop to live tools only for what the index can't answer (notably a topic that may predate the index), and batch those searches into a single turn. When routing into a large folder whose global entry is a pointer, read that folder's hub-page `## Index` for the detail.
+
 ## Workflow
 
 ### Step 1: Identify the Source
@@ -51,7 +53,7 @@ Read the full source. Identify:
 2. **Core claims and takeaways** — What does this source actually say? What's novel?
 3. **Entities** — People, organisations, tools, drugs, conditions, techniques. Candidates for entity pages.
 4. **Concepts** — Ideas, patterns, frameworks, methods. Candidates for concept pages.
-5. **Connections** — Run `obsidian:search_vault` on 2–3 distinctive terms to find related vault notes.
+5. **Connections** — Scan the Wiki Index you read for related notes first; only `obsidian:search_vault` (2–3 distinctive terms, batched) for topics the index doesn't cover.
 6. **Contradictions** — Does this disagree with anything already in the vault? Flag it.
 
 ### Step 3: Discuss with the User
@@ -84,6 +86,7 @@ The primary output — a wiki-style summary that makes the source queryable with
 ---
 created: YYYY-MM-DD
 date: YYYY-MM-DD
+type: summary
 status: active
 description: "One-sentence summary of the source content"
 tags:
@@ -136,18 +139,27 @@ exist or will be created next.
 ## Related Notes
 
 - [[Related Note]] — one-sentence context on the connection
+
+## Citations
+
+Numbered provenance for the claims above — external sources as URLs, internal
+support as wikilinks. This is the OKF `# Citations` convention; keep it last.
+
+[1] [Author et al., Title (Year)](https://example.com)
+[2] [[supporting-vault-note]] — what it corroborates
 ```
 
 **Formatting notes:**
 - Tags: always `claude` + `ingest` + 2–4 topic tags (follow tag selection in VAULT-OPS.md).
 - Length: 400–800 words. Longer sources get more aggressive synthesis.
 - Ugly slug filenames from web clips → clean filename + slug as `alias`.
+- **Citations:** number every external claim source under `## Citations`. Internal references stay as `[[wikilinks]]`; an OKF export rewrites them to `/path.md` links (see OKF Compatibility in VAULT-OPS.md). Omit the section only if the source makes no external factual claims.
 
 ### Step 6: Create or Update Entity/Concept Pages
 
 This is what makes ingest more than summarising. Important entities and concepts deserve pages that accumulate knowledge across sources.
 
-**Always search first** with `obsidian:search_vault`.
+**Always check first** — look the entity/concept up in the Wiki Index; only `obsidian:search_vault` if it isn't listed there.
 
 #### Updating an existing page
 
@@ -168,6 +180,7 @@ Not every mention deserves a page. Create when:
 ---
 created: YYYY-MM-DD
 date: YYYY-MM-DD
+type: entity   # or: concept
 status: active
 description: "One-sentence description"
 tags:
@@ -198,8 +211,8 @@ For a person: role, contributions, relevance.
 
 Execute the shared operations from VAULT-OPS.md in order:
 
-1. **Cross-reference** — Follow bidirectional cross-referencing (3–5 related notes, contextual back-references).
-2. **Wiki Index** — Add categorised entry + entity page entries + log row (operation type: `ingest`).
+1. **Cross-reference** — Follow bidirectional cross-referencing (3–5 related notes, contextual back-references). Start from the Wiki Index scan, not a fresh search.
+2. **Wiki Index** — Add an enriched entry per new page in the format `- [[filename]] · \`type\` · #tags — description (date)` (the summary uses `type: summary`, new pages use `type: entity`/`concept`), plus one log row (operation type: `ingest`). If a destination folder's global entry is a pointer, the new note's detail goes in that folder's hub-page `## Index` instead — leave that regeneration to vault-lint and just note it.
 3. **Daily breadcrumb** — `- Source ingested: [[Summary Page]] (#claude #ingest)`
 
 ### Step 8: Archive the Original (Optional)

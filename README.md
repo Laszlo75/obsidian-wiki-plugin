@@ -50,7 +50,7 @@ Processes external source material (web clippings, articles, papers, rough notes
 
 ### vault-lint
 
-Health-checks and actively improves an LLM-maintained Obsidian wiki vault. Runs up to 11 checks covering orphan pages, broken wikilinks, stale content, concept gaps, missing cross-references, tag health, index/log integrity, data gaps, structure analysis, hub page coverage, and navigation artifact opportunities. Offers auto-fixes for safe changes and produces a detailed lint report saved to the vault.
+Health-checks and actively improves an LLM-maintained Obsidian wiki vault. Runs up to 12 checks covering orphan pages, broken wikilinks, stale content, concept gaps, missing cross-references, tag health, index/log integrity, data gaps, structure analysis, hub page coverage, navigation artifact opportunities, and OKF conformance. Offers auto-fixes for safe changes and produces a detailed lint report saved to the vault.
 
 Has two complementary modes:
 
@@ -63,11 +63,17 @@ Has two complementary modes:
 
 Common conventions and formats live in `skills/shared/` as the **single source of truth**:
 
-- **VAULT-OPS.md** — vault conventions, PARA routing, cross-referencing, Wiki Index management, tag selection, daily breadcrumbs, summary reports
+- **VAULT-OPS.md** — vault conventions, PARA routing, cross-referencing, Wiki Index management, tag selection, daily breadcrumbs, summary reports, OKF compatibility
 - **OBSIDIAN-MARKDOWN.md** — Obsidian-flavoured markdown syntax: wikilinks, callouts, embedding, formatting, frontmatter properties
-- **OBSIDIAN-ARTIFACTS.md** — formats for Obsidian-native navigation artifacts: hub pages, Bases dashboards, Canvas files, Tasks aggregators (used by vault-lint)
+- **OBSIDIAN-ARTIFACTS.md** — formats for Obsidian-native navigation artifacts: hub pages (which double as per-folder indexes), Bases dashboards, Canvas files, Tasks aggregators
 
-Skills do **not** read from `skills/shared/` at runtime. When a skill is loaded, only its own directory travels with it — sibling folders like `skills/shared/` are not guaranteed to be present. So each skill reads from its own `references/` folder instead, and `skills/shared/` is propagated into those folders by a build step. This keeps a single edit point (`skills/shared/`) while every skill stays self-contained. See [Development](#development).
+Skills do **not** read from `skills/shared/` at runtime. When a skill is loaded, only its own directory travels with it — sibling folders like `skills/shared/` are not guaranteed to be present (this is the case in Claude Desktop and individual-skill installs). So each skill reads from its own `references/` folder instead, and `skills/shared/` is propagated into those folders by a build step. This keeps a single edit point (`skills/shared/`) while every skill stays self-contained. See [Development](#development).
+
+## OKF compatibility
+
+Vaults built by these skills are structured as an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) (OKF v0.1) bundle — a directory of markdown notes with YAML frontmatter, a `type` on every note, reserved index/log files, and an `okf_version` marker. That makes the knowledge base portable: consumable by any OKF-aware agent, not just this plugin.
+
+Obsidian conventions stay canonical — notes use `[[wikilinks]]`, and OKF's plain-markdown links are produced only by an export transform, never written into the vault. `vault-lint`'s OKF conformance check keeps the bundle valid. See the *OKF Compatibility* section in `skills/shared/VAULT-OPS.md` for the field mapping and export boundary.
 
 ## Development
 

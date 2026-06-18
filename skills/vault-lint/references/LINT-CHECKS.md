@@ -137,14 +137,22 @@ Untagged notes (N):
 
 **What:** Validates the vault's navigational infrastructure.
 
+The Wiki Index is the router every skill reads first (see VAULT-OPS.md), so its quality is load-bearing — this check keeps it trustworthy, not just present.
+
 **Checks:**
 - `meta/Wiki Index.md` exists?
 - `meta/log.md` exists?
 - Notes in `01 Projects/` or `03 Resources/` not listed in the Wiki Index?
 - Notes listed in the Wiki Index that no longer exist?
 - Log last entry within 30 days of the last ingest?
+- **Bare entries:** index lines still in the old `- [[Note]] — description` form, missing the `type`/`#tags` that make the index usable as a router.
+- **Fast-capture drafts:** notes with `status: draft` (often carrying a `> [!todo] Pending integration` marker) left by brainstorm fast-capture, still unlinked.
 
-**Auto-fix:** Adding missing notes to the Wiki Index; removing dead entries. Both safe to apply automatically.
+**Enrich bare entries:** read the note's frontmatter and rewrite its index line as `- [[filename]] · \`type\` · #tags — description (date)`.
+
+**Draft sweep:** for each fast-capture draft, run the deferred integration the fast path skipped — bidirectional cross-referencing per VAULT-OPS.md — then flip `status: draft` → `active`. Without this, fast-captures pile up unlinked; this is the back half of that workflow.
+
+**Auto-fix:** adding missing notes, removing dead entries, enriching bare entries, and integrating drafts are all safe. Backfilling `type`/`tags` onto a note's own frontmatter is the allowed "adding tags to clearly untagged notes" exception.
 
 ```
 🔵 INDEX & LOG HEALTH
@@ -155,6 +163,12 @@ Missing from Wiki Index (N):
 
 Dead Wiki Index entries (N):
   - [[Old Note]] — listed but file not found → remove
+
+Bare entries to enrich (N):
+  - [[Note]] — missing type/tags → auto-fix available
+
+Fast-capture drafts to integrate (N):
+  - [[Brainstorm - Topic]] — status: draft, pending integration → cross-ref + activate
 ```
 
 ---
@@ -230,9 +244,9 @@ Correctly evolved (keep): meta/ folder, "Brainstorm - " prefix ✅
 
 ---
 
-## Check 10 — Hub Page Audit
+## Check 10 — Hub Page Audit & Per-Folder Index
 
-**What:** Human-readable entry points into projects, areas, and major resource clusters. The Wiki Index is LLM-optimised; hub pages are human-optimised.
+**What:** Human-readable entry points into projects, areas, and major resource clusters. The global Wiki Index is LLM-optimised; hub pages are human-optimised — and they double as the folder's **per-folder index** (OKF progressive disclosure). Each hub page has a curated zone (human-edited) plus a generated `## Index` block that this check owns.
 
 **Hub page types:**
 
@@ -246,9 +260,15 @@ Correctly evolved (keep): meta/ folder, "Brainstorm - " prefix ✅
 1. `obsidian:project_list` — list all projects.
 2. For each: check for files named `Overview`, `Index`, `Hub`, `README`, or `00 - *`.
 3. List all folders in `02 Area/` and `03 Resources/`. Repeat.
-4. Flag any project/area/cluster with >5 notes but no hub page.
+4. Flag any project/area/cluster with >5 notes but no hub page; flag hub pages whose curated sections are stale.
 
 When offering to create a missing hub page, read `references/OBSIDIAN-ARTIFACTS.md` → Hub Page section.
+
+**Regenerate the `## Index` block:** for each hub page, rebuild the content between the `<!-- BEGIN GENERATED INDEX -->` / `<!-- END GENERATED INDEX -->` markers from the global Wiki Index — one enriched line per note in that folder (`- [[filename]] · \`type\` · #tags — description (date)`). Only touch content between the markers; never disturb the curated zone above. The global Wiki Index stays canonical; these blocks are always derived from it, never the reverse.
+
+**Progressive disclosure:** when a folder passes ~20–30 notes, collapse its entry in the global Wiki Index to a pointer (`FOLDER — N notes → [[hub page]]`) so the router read stays small. Reverse it if the folder shrinks below the threshold.
+
+**Auto-fix:** creating missing hub pages, regenerating `## Index` blocks, and collapsing/expanding global pointers are all safe — offer them.
 
 ```
 🟡 HUB PAGE AUDIT
@@ -259,8 +279,11 @@ Projects missing hub pages (N):
 Resource clusters missing indexes (N):
   - 03 Resources/Transplant Surgery/ (25 notes) — no index
 
-Stale hub pages (N):
-  - [[PAVE-2 Overview]] — last updated 2025-09-01, 8 notes added since
+Stale ## Index blocks (N):
+  - [[PAVE-2 Overview]] — 8 notes added since last regen → auto-fix available
+
+Folders to collapse to a pointer (N):
+  - 03 Resources/Transplant Surgery/ (34 notes) → point Wiki Index at [[Transplant Surgery Index]]
 ```
 
 ---
@@ -302,4 +325,30 @@ When creating artifacts, read `references/OBSIDIAN-ARTIFACTS.md`.
 3. ✅ Tasks: "Active Project Tasks"
    Rationale: Open tasks found across 8 project notes
    → Create at: meta/Active Tasks.md
+```
+
+---
+
+## Check 12 — OKF Conformance
+
+**What:** Verify the vault still reads as a valid [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) bundle (see OKF Compatibility in `references/VAULT-OPS.md`). Fast — mostly overlaps with the frontmatter reads in Checks 6 and 7.
+
+**Checks:**
+- **`type` present:** every Claude-created concept note has parseable YAML frontmatter with a non-empty `type` (the one OKF-required field).
+- **Reserved files well-formed:** `meta/Wiki Index.md` carries `okf_version: "0.1"`; `meta/log.md` is chronological.
+- **`type` vocab sanity:** flag notes whose `type` is outside the known set (`brainstorm`/`summary`/`entity`/`concept`/`hub`/`report`) — not an error (OKF allows open types), just a consistency nudge.
+
+Do **not** flag broken wikilinks here — OKF consumers must tolerate them; that's Check 2's job under our stricter maintenance stance.
+
+**Auto-fix:** backfilling `type` from the note's role (the untagged-frontmatter exception) and adding the `okf_version` marker are safe — offer them.
+
+```
+🔵 OKF CONFORMANCE
+okf_version: ✅  |  log.md chronological: ✅
+
+Notes missing `type` (N):
+  - [[Some Note]] — no type → backfill as `concept`? (auto-fix available)
+
+Off-vocabulary `type` values (N):
+  - [[Other Note]] — type: "summary-note" → did you mean `summary`?
 ```

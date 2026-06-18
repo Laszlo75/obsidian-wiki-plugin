@@ -15,6 +15,39 @@ The vault uses PARA (Tiago Forte):
 | `04 Archive/` | Completed or inactive material. Ingested sources go to `04 Archive/Ingested/`. |
 | `meta/` | Templates, Wiki Index, vault infrastructure |
 
+## The Wiki Index Is Your Router — Read It First
+
+Before searching the vault, **read `meta/Wiki Index.md` once.** It is a curated catalogue of every Claude-maintained note and is designed to answer most "where does this go / what's already here / what can I link to" questions from a single read — instead of a cascade of live `search_vault`, `get_tag_info`, and `read_note` round-trips.
+
+Each index entry carries enough to route, tag, and link without re-querying the vault:
+
+```markdown
+- [[note-filename]] · `type` · #tag1 #tag2 — One-sentence description (YYYY-MM-DD)
+```
+
+- **The wikilink uses the note's filename**, so the index doubles as the **link-target registry** — verify a candidate `[[link]]` by checking it appears here, no search needed.
+- **The `type` and folder section** tell you the routing landscape (which projects/areas/resource clusters exist) without `project_list`/`project_context`.
+- **The inline `#tags`** across entries are your **working tag vocabulary** — reuse from here instead of probing `get_tag_info` for every candidate.
+
+**Fall back to live tools only for what the index can't answer:** a topic that may exist but predates the index, disambiguating a near-duplicate filename, or confirming a tag's exact spelling/count before creating a new one. When you do search, **batch the independent searches in a single turn** rather than firing them sequentially.
+
+If the index is missing, stale, or thin, degrade gracefully to the live-search workflow below — and flag it so vault-lint can backfill `type`/`tags` on its next run.
+
+### Per-Folder Indexes (Progressive Disclosure)
+
+Large folders don't bloat the global index. Once a folder grows past ~20–30 notes, its global entry collapses to a **pointer** and the per-note detail lives in that folder's **hub page** (`00 - X Overview.md` / `Overview.md` / `Index.md`), inside a generated `## Index` section:
+
+```markdown
+- PAVE-2 — 34 notes → [[00 - PAVE-2 Overview]]
+```
+
+Rules:
+- **The global Wiki Index is canonical.** Per-folder `## Index` sections are *generated from it by vault-lint* — never hand-maintain them, and never route off a folder index alone.
+- When routing or cross-referencing into a folder whose global entry is a pointer, read that one hub page for the detail — one extra read, still far cheaper than live-searching.
+- Small folders carry no hub page; the global index lists their notes directly.
+
+See OBSIDIAN-ARTIFACTS.md for the hub-page + `## Index` format.
+
 ## Vault Conventions
 
 These are documented in `meta/Vault Conventions and Decisions Log.md`. If in doubt, read that note for the full rationale.
@@ -31,6 +64,7 @@ All property keys are lowercase. The core properties are:
 |---|---|---|
 | `created` | date | When the note was created (YYYY-MM-DD) |
 | `date` | date | Primary date for sorting/filtering |
+| `type` | text | Kind of note: `brainstorm`, `summary`, `entity`, `concept`, `hub`, `report`. Drives Wiki Index routing, Bases filtering, and aligns with the OKF `type` convention. |
 | `status` | text | `active`, `draft`, `complete`, `archived` |
 | `description` | text | One-sentence summary for search and Bases |
 | `tags` | list | Topic tags |
@@ -45,8 +79,8 @@ Notes created by Claude always include `#claude` in tags.
 Obsidian resolves wikilinks by **filename**, not by the `title` frontmatter property. This matters because getting it wrong creates phantom empty notes.
 
 **Before including any `[[wikilink]]`:**
-1. Search with `obsidian:search_vault` to confirm the note exists.
-2. If found, use `obsidian:read_note` on the candidate to check the actual **file path**.
+1. **Check the Wiki Index first** — if the target appears there, its entry already gives you the correct filename; no search needed.
+2. Only if it's *not* in the index, search with `obsidian:search_vault` to confirm the note exists, and use `obsidian:read_note` on the candidate to check the actual **file path**.
 3. The wikilink uses the filename (without `.md`), not any title or heading.
 
 **Example:** If a note's file path is `03 Resources/Claude/claude-code-obsidian-ai-knowledge-base.md`, the correct link is `[[claude-code-obsidian-ai-knowledge-base]]` — never `[[Using Claude Code and Obsidian for AI-Assisted Knowledge Management]]`.
@@ -58,9 +92,9 @@ A broken link is worse than no link. When in doubt, omit it.
 The vault has 185+ tags. Reusing existing tags matters more than inventing the perfect taxonomy.
 
 1. Start with baseline tags for the operation (e.g., `claude` + `brainstorming` for brainstorms, `claude` + `ingest` for ingested sources).
-2. Add 2–4 topic-specific tags by running `obsidian:get_tag_info` (with `verbose: true`) on candidate tags to see which files use them.
+2. Add 2–4 topic-specific tags **from the tag vocabulary already visible in the Wiki Index** (the inline `#tags` on related entries). Reuse beats inventing.
 3. Reuse existing vault tags where they fit (e.g., `#research`, `#transplant`, `#r`, `#medlit`).
-4. Create a new tag only if nothing in the existing taxonomy covers the topic.
+4. **Only call `obsidian:get_tag_info`** (with `verbose: true`) when the index doesn't show a fitting tag and you need to confirm an existing tag's exact spelling/count before reusing — or before creating a new tag. Create a new tag only if nothing in the existing taxonomy covers the topic.
 
 ## PARA Routing
 
@@ -68,7 +102,7 @@ When deciding where to place a new note, work through this decision tree:
 
 ### 1. Active Project?
 
-Use `obsidian:project_list` to list all projects under `01 Projects/`. If the note supports an active project, run `obsidian:project_context` to load overview, sessions, and backlog. Route there if it's a clear fit.
+First check the **Wiki Index** — its Projects section shows the active projects and what's in them. If a project is the obvious home, route there. Only call `obsidian:project_context` to load overview/sessions/backlog when you actually need that detail (e.g., the note adds to an in-flight workstream); fall back to `obsidian:project_list` only if the index is missing or stale.
 
 Example: A paper about pancreas preservation → `01 Projects/Research/PAVE-2/`
 
@@ -103,10 +137,11 @@ A note that only links outward is half-connected. The vault becomes a true wiki 
 
 ### 1. Identify Related Notes
 
-Build a candidate list from three channels:
+Build a candidate list, cheapest channel first:
+- **Wiki Index scan** — entries sharing your note's `type`/`#tags` or with related descriptions are candidates you can spot without any search call. Start here.
 - **Wikilinks in the new note** — every `[[note]]` included is a candidate.
-- **Search hits** — run `obsidian:search_vault` on the 2–3 most distinctive terms from the note's topic. Any existing note that's clearly related but wasn't linked is a candidate.
-- **Tag neighbours** — if you used a specific tag (e.g., `#pancreas-transplant`), check via `obsidian:get_tag_info` what other notes share it.
+- **Search hits (only if the index is thin on this topic)** — run `obsidian:search_vault` on the 2–3 most distinctive terms, batched in one turn. Any clearly-related note that wasn't linked is a candidate.
+- **Tag neighbours** — if you used a specific tag (e.g., `#pancreas-transplant`) and the index doesn't already list its members, check via `obsidian:get_tag_info`.
 
 Filter down to **3–5 most relevant** notes. Don't spam every tangentially related page.
 
@@ -136,18 +171,25 @@ For each candidate:
 
 ## Wiki Index Management
 
-The vault maintains a **Wiki Index** at `meta/Wiki Index.md`. This catalogues all Claude-generated notes by PARA category with one-line summaries, plus a chronological log table.
+The vault maintains a **Wiki Index** at `meta/Wiki Index.md`. This catalogues all Claude-generated notes by PARA category, plus a chronological log table. It is the router described at the top of this file, so every entry must carry the fields that make routing/tagging/linking possible without re-searching.
+
+### Entry Format
+
+Each entry uses the **filename** in the wikilink and carries `type` + `tags` inline:
+
+```markdown
+- [[note-filename]] · `type` · #tag1 #tag2 — One-sentence description (YYYY-MM-DD)
+```
+
+If you read the index and find older entries in the bare `- [[Note]] — description` form, that's fine — they still work; enrich them opportunistically when you touch them, and let vault-lint backfill the rest.
 
 ### Updating the Index
 
 After saving a new note:
 
-1. **Read it** via `obsidian:read_note` with `path: meta/Wiki Index.md`.
+1. **Read it** via `obsidian:read_note` with `path: meta/Wiki Index.md` (you likely already read it as the router at the start of the operation — reuse that).
 2. **Find the correct category section** (Projects, Areas, Resources, Evidence Summaries) based on where the note was routed.
-3. **Append a new entry** under that section using `obsidian:str_replace_in_note`:
-   ```markdown
-   - [[Note Name]] — One-sentence description (YYYY-MM-DD)
-   ```
+3. **Append a new entry** in the format above using `obsidian:str_replace_in_note`. Use the note's filename, its `type`, and the tags you applied.
 4. **Keep entries sorted** within each section by date (newest first).
 
 ### Log Entry
@@ -160,7 +202,7 @@ Valid operation types: `brainstorm`, `brainstorm-update`, `ingest`, `lint`, `con
 
 ### If the Wiki Index Does Not Exist
 
-Create it via `obsidian:create_note` at `meta/Wiki Index.md` with sections for Projects, Areas, Resources, Evidence Summaries, and a Log table. See the brainstorm-to-obsidian skill for the full scaffold template.
+Create it via `obsidian:create_note` at `meta/Wiki Index.md` with sections for Projects, Areas, Resources, Evidence Summaries, and a Log table. Give it frontmatter `okf_version: "0.1"` (the bundle-root version marker — see OKF Compatibility). See the brainstorm-to-obsidian skill for the full scaffold template.
 
 ## Daily Note Breadcrumb
 
@@ -202,3 +244,39 @@ Use emoji prefixes for scannability: ✅ 📂 🏷️ 🔗 📋 📅 📦
 - **Code snippets** in fenced code blocks with language identifiers.
 - **Target length:** 400–800 words for most notes. If a note grows beyond ~1500 words across sessions, suggest splitting.
 - Always use `status: active` on new notes.
+
+## OKF Compatibility
+
+The vault is structured as an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) (OKF v0.1) bundle: a directory of markdown notes with YAML frontmatter, reserved index/log files, and a `type` on every concept. This keeps the vault portable — consumable by any OKF-aware agent — without changing how it's authored. **Obsidian conventions stay canonical; OKF is the interop layer.**
+
+### Bundle mapping
+
+| OKF concept | This vault |
+|---|---|
+| Concept document (`type` required) | every Claude-created note (`type:` in frontmatter) |
+| `index.md` (per-directory listing) | global `meta/Wiki Index.md` + per-folder hub-page `## Index` blocks |
+| `log.md` (chronological history) | `meta/log.md` |
+| Bundle-root version marker | `okf_version: "0.1"` in `meta/Wiki Index.md` frontmatter |
+
+### Frontmatter field mapping
+
+OKF's recommended fields map onto our schema — no renaming needed in-vault; an export applies the translation:
+
+| OKF field | Our field | Notes |
+|---|---|---|
+| `type` | `type` | identical; required by both |
+| `title` | *(filename)* | OKF derives from filename when absent — matches our "filename = title" rule |
+| `description` | `description` | identical |
+| `tags` | `tags` | identical |
+| `resource` | `source` | rename on export |
+| `timestamp` | `date` (fall back to `created`) | emit ISO 8601 on export |
+
+### Export boundary (wikilinks → OKF links)
+
+In-vault we always use Obsidian `[[wikilinks]]` (they drive backlinks, the graph, embeds, and block refs). An OKF export — not the in-vault authoring — performs the one-way transform:
+
+- `[[note-name]]` → `[note-name](/relative/path/to/note.md)` (bundle-relative, `.md` extension, spaces `%20`-encoded)
+- `source` → `resource`, `date` → `timestamp`
+- per-folder hub `## Index` blocks → OKF `index.md` files
+
+Never emit raw markdown links into vault notes to "pre-comply" — it degrades the Obsidian experience and OKF consumers must tolerate our wikilinks being converted at export time only.

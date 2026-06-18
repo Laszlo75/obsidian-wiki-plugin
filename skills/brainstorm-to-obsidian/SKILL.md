@@ -21,7 +21,20 @@ You are capturing output from a brainstorming session in this Claude conversatio
 
 **Read the vault operations reference** at `references/VAULT-OPS.md`. It contains vault conventions, PARA routing, cross-referencing, Wiki Index management, and other shared operations you'll need. For callout types, wikilink syntax, and formatting details, consult `references/OBSIDIAN-MARKDOWN.md`.
 
+**Then read `meta/Wiki Index.md` once — it is your router.** As described in VAULT-OPS.md, this single read gives you the routing landscape (which projects/areas/resource clusters exist), the working tag vocabulary, and the link-target registry. Lean on it for Steps 2, 3, and 5 instead of firing a cascade of live `search_vault` / `get_tag_info` / `project_context` calls. Drop to live tools only for what the index can't answer, and batch any such searches into a single turn.
+
 Additionally, check for a **Brainstorm template** via `obsidian:list_templates`. The vault has one in `meta/templates/` — use it as the base via the `template` parameter on `create_note`.
+
+### Fast-Capture Mode
+
+If the user signals urgency — "just save it", "quick capture", "don't overthink it" — or the conversation is short, skip the full integration pass:
+
+1. Route and tag from the Wiki Index read alone (no live searches).
+2. Save the note with `status: draft` and a `> [!todo] Pending integration` marker at the top.
+3. Update the Wiki Index entry + log row and drop the daily breadcrumb.
+4. **Defer** cross-referencing (Step 5b) and existing-note reconciliation (Step 7) — tell the user it's captured and that vault-lint (or a later "integrate this" pass) will wire up backlinks. 
+
+This makes capture near-instant; the expensive linking happens later, in the background, not in the user's way.
 
 ## Workflow
 
@@ -42,11 +55,11 @@ Identify:
 
 Always include baseline tags: `brainstorming`, `claude`.
 
-Then add 2–4 topic-specific tags following the tag selection process in VAULT-OPS.md (search existing tags first, reuse before creating).
+Then add 2–4 topic-specific tags following the tag selection process in VAULT-OPS.md — **reuse from the tag vocabulary in the Wiki Index you already read**; only call `get_tag_info` if the index has no fitting tag.
 
 ### Step 3: Route to the Correct Location
 
-Follow the PARA routing decision tree in VAULT-OPS.md. Tell the user your routing decision and why before saving.
+Follow the PARA routing decision tree in VAULT-OPS.md. **Use the Wiki Index's Projects/Areas/Resources sections to decide** rather than re-listing the vault; reach for `project_context` only when the note adds to an in-flight workstream and you need its detail. Tell the user your routing decision and why before saving.
 
 ### Step 4: Compose the Note
 
@@ -56,6 +69,7 @@ Use this structure:
 ---
 created: YYYY-MM-DD
 date: YYYY-MM-DD
+type: brainstorm
 tags:
   - brainstorming
   - claude
@@ -132,7 +146,7 @@ Follow the bidirectional cross-referencing process in VAULT-OPS.md. Identify 3�
 
 #### 5c. Update the Wiki Index
 
-Follow the Wiki Index management process in VAULT-OPS.md. Add a categorised entry and a log row with operation type `brainstorm`.
+Follow the Wiki Index management process in VAULT-OPS.md. Add a categorised entry in the enriched format (`- [[filename]] · \`brainstorm\` · #tags — description (date)`) and a log row with operation type `brainstorm`. Reuse the index content you read at the start rather than re-reading it.
 
 #### 5d. Daily Note Breadcrumb
 
@@ -157,7 +171,9 @@ If action items emerged and the brainstorm routed to a project:
 
 ### Step 7: Check for Existing Notes
 
-Follow the "Handling Existing Notes" process in VAULT-OPS.md. Search before creating. Offer to append, link, or merge if a note on the same topic exists.
+Follow the "Handling Existing Notes" process in VAULT-OPS.md. **Scan the Wiki Index first** — if no entry on this topic appears there, only then search the vault to catch pre-index notes. Offer to append, link, or merge if a note on the same topic exists.
+
+(Logically this check belongs before you save in Step 5a — do it as soon as the topic is clear; it's listed here so the save flow reads linearly.)
 
 ### Step 8: Summary Report
 
